@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Causeway Bay Properties · HK$10M–20M</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:       #1a9e8f;
+      --teal-dark:  #13877a;
+      --teal-light: #e6f7f5;
+      --bg:         #f7f8fa;
+      --surface:    #ffffff;
+      --border:     #e4e7ec;
+      --text:       #1c2230;
+      --muted:      #768096;
+      --tag-bg:     #f0f2f5;
+      --shadow:     0 1px 4px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
+      --shadow-h:   0 4px 20px rgba(0,0,0,.12);
+      --r:          10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--teal);
+      letter-spacing: -1px;
+      text-decoration: none;
+    }
+    .logo-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: 0;
+      margin-left: 2px;
+    }
+    .header-divider { width: 1px; height: 22px; background: var(--border); }
+    .header-title { font-size: 13px; color: var(--muted); }
+    .spacer { flex: 1; }
+    .status-pill {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .dot.loading { background: #f59e0b; animation: blink 1s infinite; }
+    .dot.error   { background: #ef4444; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Filter bar ── */
+    .filterbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .filterbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-right: 4px; }
+
+    select {
+      font-size: 13px;
+      padding: 8px 32px 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23768096' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+      -webkit-appearance: none;
+      cursor: pointer;
+      color: var(--text);
+    }
+    select:focus { outline: 2px solid var(--teal); outline-offset: 1px; border-color: var(--teal); }
+
+    .btn {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .12s, transform .08s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-teal   { background: var(--teal); color: #fff; }
+    .btn-teal:hover { background: var(--teal-dark); }
+    .btn-ghost  { background: var(--tag-bg); color: var(--text); }
+    .btn-ghost:hover { background: #e4e7ec; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .ml-auto { margin-left: auto; }
+
+    /* ── Results header ── */
+    .results-header {
+      max-width: 1200px;
+      margin: 20px auto 16px;
+      padding: 0 24px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .results-count { font-size: 20px; font-weight: 700; }
+    .results-sub   { font-size: 14px; color: var(--muted); }
+
+    /* ── Grid ── */
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto 56px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .18s, transform .18s;
+      cursor: pointer;
+    }
+    .card:hover { box-shadow: var(--shadow-h); transform: translateY(-3px); }
+
+    /* Image */
+    .card-thumb {
+      position: relative;
+      height: 190px;
+      background: linear-gradient(135deg, #dde2ea 0%, #c8cfd9 100%);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .3s;
+    }
+    .card:hover .card-thumb img { transform: scale(1.04); }
+    .thumb-placeholder {
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: #a0aab8;
+    }
+
+    /* Badges on image */
+    .badge-row {
+      position: absolute;
+      top: 10px; left: 10px; right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 6px;
+      letter-spacing: .2px;
+    }
+    .badge-sale   { background: var(--teal); color: #fff; }
+    .badge-source {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      color: #fff;
+    }
+
+    /* Body */
+    .card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+    .card-price {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -.4px;
+      line-height: 1;
+    }
+    .card-price-psf {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 4px;
+    }
+
+    .card-name {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--text);
+    }
+    .card-floor {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Icon stats */
+    .card-stats {
+      display: flex;
+      gap: 18px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .stat-icon { font-size: 15px; flex-shrink: 0; }
+    .stat-item span { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 2px; }
+
+    /* Features */
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 11px;
+      background: var(--teal-light);
+      color: var(--teal-dark);
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .tag-grey {
+      background: var(--tag-bg);
+      color: var(--muted);
+    }
+
+    /* Footer */
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .card-link {
+      display: block;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      text-decoration: none;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1.5px solid var(--teal);
+      transition: background .12s, color .12s;
+    }
+    .card-link:hover { background: var(--teal); color: #fff; }
+    .card-link-disabled {
+      opacity: .35;
+      pointer-events: none;
+    }
+
+    /* ── State views ── */
+    .state {
+      max-width: 560px;
+      margin: 80px auto;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .state-icon  { font-size: 52px; margin-bottom: 16px; }
+    .state-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .state-msg   { font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--teal);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      line-height: 1.8;
+    }
+    footer a { color: var(--teal); text-decoration: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; padding: 0 16px; }
+      .filterbar-inner, .results-header { padding: 12px 16px; }
+      .logo-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">propr<span class="logo-sub">hk</span></a>
+    <div class="header-divider"></div>
+    <div class="header-title">Causeway Bay · For Sale · HK$10M – 20M</div>
+    <div class="spacer"></div>
+    <div class="status-pill">
+      <div class="dot loading" id="dot"></div>
+      <span id="statusText">Loading…</span>
+    </div>
+  </div>
+</header>
+
+<!-- Filter bar -->
+<div class="filterbar">
+  <div class="filterbar-inner">
+    <span class="filter-label">Filter:</span>
+    <select id="filterBedrooms" onchange="applyFilters()">
+      <option value="">Any bedrooms</option>
+      <option value="1">1 Bedroom</option>
+      <option value="2">2 Bedrooms</option>
+      <option value="3">3 Bedrooms</option>
+      <option value="4">4+ Bedrooms</option>
+    </select>
+    <select id="filterSource" onchange="applyFilters()">
+      <option value="">All sources</option>
+    </select>
+    <select id="sortBy" onchange="applyFilters()">
+      <option value="price_asc">Price: Low to High</option>
+      <option value="price_desc">Price: High to Low</option>
+      <option value="psf_asc">Price/ft²: Low to High</option>
+      <option value="area_desc">Size: Largest First</option>
+    </select>
+    <div class="ml-auto" style="display:flex;gap:8px">
+      <button class="btn btn-ghost" id="refreshBtn" onclick="loadListings(true)">
+        ↻ Refresh
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Results count -->
+<div class="results-header">
+  <div class="results-count" id="resultsCount">—</div>
+  <div class="results-sub" id="resultsSub">properties in Causeway Bay</div>
+</div>
+
+<!-- Main content -->
+<div id="app"></div>
+
+<!-- Footer -->
+<footer id="footer">
+  Data sourced from 28hse.com, spacious.hk, midland.com.hk
+</footer>
+
+<script>
+  let allListings = [];
+
+  // ── Load ────────────────────────────────────────────────────────────────
+
+  async function loadListings(force = false) {
+    setStatus('loading', force ? 'Refreshing…' : 'Loading…');
+    document.getElementById('refreshBtn').disabled = true;
+    showSpinner();
+
+    try {
+      const r = await fetch(force ? '/api/listings?refresh=true' : '/api/listings');
+      if (!r.ok) throw new Error(`Server error ${r.status}`);
+      const data = await r.json();
+
+      allListings = data.listings || [];
+      populateSources(allListings);
+      applyFilters();
+
+      const age   = data.fetched_at ? age_str(data.fetched_at) : '';
+      const src   = (data.sources || []).join(', ') || '28hse.com';
+      const label = data.from_cache ? `Cached ${age}` : 'Live data';
+      setStatus(data.stale ? 'error' : 'ok', `${label} · ${src}`);
+
+      updateFooter(data);
+    } catch (e) {
+      setStatus('error', 'Failed to load');
+      showError(e.message);
+    } finally {
+      document.getElementById('refreshBtn').disabled = false;
+    }
+  }
+
+  // ── Filter + Sort ────────────────────────────────────────────────────
+
+  function applyFilters() {
+    const bed  = document.getElementById('filterBedrooms').value;
+    const src  = document.getElementById('filterSource').value;
+    const sort = document.getElementById('sortBy').value;
+
+    let list = allListings.filter(p => {
+      if (bed) {
+        const b = (p.bedrooms || '').toLowerCase();
+        if (bed === '4') { if (!/[4-9]/.test(b)) return false; }
+        else             { if (!b.includes(bed)) return false; }
+      }
+      if (src && p.source !== src) return false;
+      return true;
+    });
+
+    list.sort((a, b) => {
+      if (sort === 'price_asc')  return priceN(a) - priceN(b);
+      if (sort === 'price_desc') return priceN(b) - priceN(a);
+      if (sort === 'psf_asc')    return psfN(a)   - psfN(b);
+      if (sort === 'area_desc')  return areaN(b)  - areaN(a);
+      return 0;
+    });
+
+    document.getElementById('resultsCount').textContent = list.length;
+    document.getElementById('resultsSub').textContent =
+      `propert${list.length === 1 ? 'y' : 'ies'} in Causeway Bay`;
+
+    renderCards(list);
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────
+
+  function renderCards(list) {
+    const app = document.getElementById('app');
+    if (!list.length) {
+      app.innerHTML = `<div class="state">
+        <div class="state-icon">🔍</div>
+        <div class="state-title">No properties found</div>
+        <div class="state-msg">Try adjusting your filters, or click Refresh to fetch the latest listings.</div>
+      </div>`;
+      return;
+    }
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grid.innerHTML = list.map(card).join('');
+    app.innerHTML = '';
+    app.appendChild(grid);
+  }
+
+  function card(p) {
+    const price   = fmtPrice(p.price);
+    const srcColor = p.source_color || '#768096';
+
+    // Thumb
+    const thumb = p.image
+      ? `<img src="${x(p.image)}" alt="${x(p.name)}" loading="lazy"
+             onerror="this.parentElement.innerHTML='<div class=thumb-placeholder>🏢</div>'">`
+      : `<div class="thumb-placeholder">🏢</div>`;
+
+    // Stats row: beds / area
+    const bedN  = bedNum(p.bedrooms);
+    const areaN_ = p.area_saleable || p.area_gross || '';
+    const stats = [
+      bedN  ? `<div class="stat-item"><span class="stat-icon">🛏</span>${bedN}<span>bed${bedN>1?'s':''}</span></div>` : '',
+      areaN_ ? `<div class="stat-item"><span class="stat-icon">📐</span>${areaN_}</div>` : '',
+      p.price_per_sqft ? `<div class="stat-item"><span class="stat-icon">💰</span>${p.price_per_sqft}</div>` : '',
+    ].filter(Boolean).join('');
+
+    // Tags
+    const rawTags = [
+      ...(p.features ? p.features.split(',').map(t => t.trim()) : []),
+      p.district || '',
+    ].filter(Boolean);
+    const tagHtml = rawTags.slice(0,4).map(t => `<span class="tag tag-grey">${x(t)}</span>`).join('');
+
+    // Link
+    const linkHtml = p.url
+      ? `<a class="card-link" href="${x(p.url)}" target="_blank" rel="noopener">View on ${x(p.source)} →</a>`
+      : `<a class="card-link card-link-disabled" href="#">No link available</a>`;
+
+    return `<div class="card" onclick="if(!event.target.closest('a'))window.open('${x(p.url||'')}','_blank')">
+      <div class="card-thumb">
+        ${thumb}
+        <div class="badge-row">
+          <span class="badge badge-sale">For Sale</span>
+          <span class="badge badge-source" style="background:${srcColor}">${x(p.source)}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div>
+          <div class="card-price">${price}</div>
+          ${p.price_per_sqft ? `<div class="card-price-psf">${x(p.price_per_sqft)}</div>` : ''}
+        </div>
+        <div>
+          <div class="card-name">${x(p.name || 'Unnamed property')}</div>
+          ${p.floor ? `<div class="card-floor">${x(p.floor)}</div>` : ''}
+        </div>
+        ${stats ? `<div class="card-stats">${stats}</div>` : ''}
+        ${tagHtml ? `<div class="card-tags">${tagHtml}</div>` : ''}
+      </div>
+      <div class="card-footer">${linkHtml}</div>
+    </div>`;
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+
+  function x(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtPrice(raw) {
+    if (!raw) return '—';
+    const m = String(raw).match(/([\d.]+)\s*[Mm]illion/i) || String(raw).match(/HK\$?([\d.]+)M\b/i);
+    if (m) return `HK$${parseFloat(m[1]).toFixed(1)}M`;
+    return String(raw).replace(/^Sell\s+/i,'').replace('HKD','HK$');
+  }
+
+  function priceN(p) {
+    const m = String(p.price||'').match(/([\d.]+)\s*[Mm]illion/i)||String(p.price||'').match(/HK\$?([\d.]+)M/i);
+    return m ? parseFloat(m[1]) : 999;
+  }
+  function psfN(p) {
+    const m = String(p.price_per_sqft||'').match(/([\d,]+)/);
+    return m ? parseInt(m[1].replace(/,/g,'')) : 99999;
+  }
+  function areaN(p) {
+    const m = String(p.area_saleable||p.area_gross||'').match(/([\d,]+)/);
+    return m ? parseInt(m[1].replace(/,/g,'')) : 0;
+  }
+  function bedNum(s) {
+    const m = String(s||'').match(/(\d+)/);
+    return m ? parseInt(m[1]) : 0;
+  }
+
+  function age_str(iso) {
+    const s = (Date.now() - new Date(iso)) / 1000;
+    if (s < 60)    return 'just now';
+    if (s < 3600)  return `${Math.round(s/60)}m ago`;
+    if (s < 86400) return `${Math.round(s/3600)}h ago`;
+    return `${Math.round(s/86400)}d ago`;
+  }
+
+  function setStatus(state, text) {
+    document.getElementById('dot').className = 'dot' +
+      (state==='loading' ? ' loading' : state==='error' ? ' error' : '');
+    document.getElementById('statusText').textContent = text;
+  }
+
+  function showSpinner() {
+    document.getElementById('app').innerHTML = `<div class="state">
+      <div class="spinner"></div>
+      <div class="state-msg">Fetching Causeway Bay listings…</div>
+    </div>`;
+    document.getElementById('resultsCount').textContent = '—';
+  }
+
+  function showError(msg) {
+    document.getElementById('app').innerHTML = `<div class="state">
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Could not load listings</div>
+      <div class="state-msg">${x(msg)}</div>
+    </div>`;
+  }
+
+  function populateSources(list) {
+    const srcs = [...new Set(list.map(p=>p.source).filter(Boolean))];
+    const sel  = document.getElementById('filterSource');
+    const cur  = sel.value;
+    sel.innerHTML = '<option value="">All sources</option>' +
+      srcs.map(s=>`<option value="${x(s)}"${s===cur?' selected':''}>${x(s)}</option>`).join('');
+  }
+
+  function updateFooter(data) {
+    const at  = data.fetched_at
+      ? new Date(data.fetched_at).toLocaleString('en-HK', {timeZone:'Asia/Hong_Kong'})
+      : '—';
+    const err = (data.errors||[]).length
+      ? `<br>⚠ ${data.errors.slice(0,2).map(x).join(' · ')}` : '';
+    const src = (data.sources||['28hse.com']).join(', ');
+    document.getElementById('footer').innerHTML =
+      `Updated ${at} HKT${err}<br>Data from ${src}`;
+  }
+
+  // Boot
+  loadListings(false);
+  setInterval(() => loadListings(false), 24*60*60*1000);
+</script>
+</body>
+</html>
