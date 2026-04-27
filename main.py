@@ -34,7 +34,7 @@ async def get_listings(
     refresh: bool = Query(False, description="Force a fresh scrape"),
     min_m: float = Query(10, description="Min price HK$M"),
     max_m: float = Query(20, description="Max price HK$M"),
-    bedrooms: int | None = Query(None, description="Filter by bedrooms"),
+    beds_min: int = Query(3, description="Minimum bedrooms"),
 ):
     if not refresh and _cache_valid():
         data = json.loads(CACHE_FILE.read_text())
@@ -48,9 +48,9 @@ async def get_listings(
             data["from_cache"] = True
             return JSONResponse(data)
 
-        log.info("Fetching fresh listings (min=%.0fM max=%.0fM)…", min_m, max_m)
+        log.info("Fetching fresh listings (min=%.0fM max=%.0fM beds_min=%d)…", min_m, max_m, beds_min)
         try:
-            result = await fetch_all(min_m=min_m, max_m=max_m, bedrooms=bedrooms)
+            result = await fetch_all(min_m=min_m, max_m=max_m, beds_min=beds_min)
         except Exception as exc:
             log.error("Scrape failed: %s", exc)
             if CACHE_FILE.exists():
